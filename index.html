@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ff4500">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Para ti 🌻</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="scene">
+    <div id="sky"></div>
+    <div id="stars"></div>
+    <div id="moon"></div>
+    <div id="tsparticles"></div>
+
+    <div id="ground">
+      <svg id="ground-svg" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
+        <!-- capas de tierra con ondas naturales -->
+        <path d="M0,75 C180,40 380,95 580,65 C780,35 980,85 1180,55 C1320,38 1400,65 1440,50 L1440,400 L0,400 Z"
+              fill="#0d1a06"/>
+        <path d="M0,125 C280,90 530,138 780,115 C990,96 1200,130 1440,105 L1440,400 L0,400 Z"
+              fill="#152508"/>
+        <path d="M0,158 C340,132 690,165 1040,145 C1240,133 1370,152 1440,140 L1440,400 L0,400 Z"
+              fill="#1e390b"/>
+        <path d="M0,180 C380,162 780,184 1160,168 L1440,172 L1440,400 L0,400 Z"
+              fill="#2a4a10"/>
+        <!-- franja de hierba superior -->
+        <path d="M0,188 C200,178 450,192 700,183 C950,174 1200,188 1440,179 L1440,198 L0,198 Z"
+              fill="#356114" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <div id="field">
+      <!-- Las flores se generan con JS en buildFlowers() -->
+    </div>
+  </div>
+
+  <!-- Frase coqueta -->
+
+
+  <!-- Frase coqueta -->
+  <div id="phrase">No te pude entregar flores... así que las programé 🌻</div>
+
+  <!-- CDN Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude install:*)",
+      "Bash(python3:*)"
+    ],
+    "defaultMode": "bypassPermissions"
+  }
+}
