@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════
    Flor Amarilla — main.js
-   GSAP + tsParticles + Vanilla JS
+   GSAP + Vanilla JS
    ══════════════════════════════════════════════════════ */
 
 /* ─── UTILS ─── */
@@ -10,15 +10,15 @@ const rnd = (a, b) => Math.random() * (b - a) + a;
 const pick = arr => arr[Math.floor(Math.random() * arr.length)];
 
 /* ─── STATE ─── */
-let windTimeline = null;
-let particlesLoaded = false;
+// La pista de scroll no debe asomar hasta que el campo esté en pie
+let sceneReady = false;
 
 /* ─── FLOWER SVG GENERATOR ─── */
 function createFlowerSVG(scale, isCenter) {
   const W  = Math.round(110 * scale);
   const H  = Math.round(185 * scale);
   const cx = Math.round(W / 2);
-  const cy = Math.round(H * 0.28);   // centro de la cabeza de la flor
+  const cy = Math.round(H * 0.22);   // centro de la cabeza de la flor
 
   // Dimensiones de pétalos
   const prx  = Math.round(11 * scale);
@@ -94,6 +94,23 @@ function buildFlowers() {
   // Definición de cada flor: posición, escala, orden de aparición, movimiento de viento
   // simple:true → fade-in rápido (fondo), sin animación de brote
   const defs = [
+    // ── Fila del horizonte (simple, casi puntos de luz) ──
+    { left:  2, scale: 0.23, order:  1, sway: -1.1, dur: 5.8, delay: 0.3, simple: true },
+    { left:  7, scale: 0.25, order:  2, sway: -1.3, dur: 6.1, delay: 1.1, simple: true },
+    { left: 12, scale: 0.22, order:  3, sway: -1.2, dur: 5.5, delay: 0.7, simple: true },
+    { left: 18, scale: 0.26, order:  4, sway: -1.4, dur: 6.3, delay: 1.4, simple: true },
+    { left: 24, scale: 0.24, order:  5, sway: -1.1, dur: 5.9, delay: 0.5, simple: true },
+    { left: 31, scale: 0.25, order:  6, sway: -1.3, dur: 6.0, delay: 1.2, simple: true },
+    { left: 38, scale: 0.23, order:  7, sway: -1.2, dur: 5.6, delay: 0.9, simple: true },
+    { left: 45, scale: 0.26, order:  8, sway: -1.4, dur: 6.2, delay: 0.2, simple: true },
+    { left: 52, scale: 0.24, order:  9, sway: -1.1, dur: 5.7, delay: 1.5, simple: true },
+    { left: 59, scale: 0.25, order: 10, sway: -1.3, dur: 6.1, delay: 0.6, simple: true },
+    { left: 66, scale: 0.22, order: 11, sway: -1.2, dur: 5.4, delay: 1.3, simple: true },
+    { left: 73, scale: 0.26, order: 12, sway: -1.4, dur: 6.0, delay: 0.4, simple: true },
+    { left: 80, scale: 0.24, order: 13, sway: -1.1, dur: 5.8, delay: 1.0, simple: true },
+    { left: 87, scale: 0.25, order: 14, sway: -1.3, dur: 6.3, delay: 0.8, simple: true },
+    { left: 94, scale: 0.23, order: 15, sway: -1.2, dur: 5.5, delay: 1.6, simple: true },
+    { left: 98, scale: 0.26, order: 16, sway: -1.4, dur: 5.9, delay: 0.1, simple: true },
     // ── Fila muy trasera (simple) ──
     { left:  1, scale: 0.33, order:  1, sway: -1.6, dur: 5.1, delay: 0.4, simple: true },
     { left:  8, scale: 0.36, order:  2, sway: -1.9, dur: 4.8, delay: 1.2, simple: true },
@@ -134,15 +151,27 @@ function buildFlowers() {
     { left: 63, scale: 0.76, order: 35, sway: -3.0, dur: 3.7, delay: 1.5 },
     { left: 74, scale: 0.73, order: 36, sway: -2.8, dur: 4.3, delay: 0.7 },
     { left: 86, scale: 0.70, order: 37, sway: -3.4, dur: 3.9, delay: 1.0 },
+    { left:  1, scale: 0.72, order: 37, sway: -3.1, dur: 4.4, delay: 0.6 },
+    { left: 46, scale: 0.69, order: 37, sway: -3.6, dur: 3.5, delay: 1.4 },
+    { left: 95, scale: 0.74, order: 37, sway: -2.9, dur: 4.0, delay: 0.2 },
     // ── Primera fila (animación completa) ──
     { left: 11, scale: 1.02, order: 38, sway: -3.8, dur: 3.5, delay: 0.7 },
     { left: 27, scale: 0.97, order: 39, sway: -3.6, dur: 3.7, delay: 0.4 },
     { left: 60, scale: 1.05, order: 40, sway: -3.9, dur: 3.4, delay: 1.0 },
     { left: 77, scale: 0.98, order: 41, sway: -3.7, dur: 3.6, delay: 0.6 },
     { left: 91, scale: 1.00, order: 42, sway: -3.5, dur: 3.8, delay: 0.9 },
+    { left:  3, scale: 0.95, order: 42, sway: -4.0, dur: 3.9, delay: 0.3 },
+    { left: 36, scale: 1.01, order: 42, sway: -3.4, dur: 3.5, delay: 1.2 },
+    { left: 52, scale: 0.99, order: 42, sway: -3.8, dur: 3.7, delay: 0.5 },
+    { left: 69, scale: 1.04, order: 42, sway: -3.6, dur: 4.0, delay: 1.1 },
     // ── Flor central ──
     { left: 44, scale: 1.90, order: 43, sway: -3.0, dur: 4.1, delay: 0.0, center: true },
   ];
+
+  // El orden de aparición y el apilado se derivan del tamaño: de lo más lejano
+  // a lo más cercano. Así se pueden añadir flores sin renumerar a mano.
+  defs.slice().sort((a, b) => a.scale - b.scale)
+      .forEach((d, i) => { d.order = i + 1; });
 
   // Escala global según ancho de pantalla
   const vw = window.innerWidth;
@@ -153,19 +182,31 @@ function buildFlowers() {
     wrap.className = 'flower-wrap';
     wrap.dataset.order = def.order;
     wrap.dataset.simple = def.simple ? 'true' : '';
+    // Las del fondo miden unos pocos píxeles: mecerlas no se aprecia
+    // y son casi la mitad de las animaciones de la escena
+    wrap.dataset.wind = def.scale >= 0.42 ? 'true' : '';
 
     const es = def.scale * gScale;          // escala efectiva
     const h = Math.round(185 * es);
     wrap.dataset.height = h;
 
-    // Flores traseras levemente elevadas para reforzar la perspectiva
-    const bottomOffset = es < 0.60 ? '5%'
-                       : es < 0.85 ? '2%'
-                       : '0%';
+    // Perspectiva: cuanto más pequeña es la flor, más arriba se planta en el
+    // plano del suelo. Se mide sobre def.scale (el valor de diseño) y no sobre
+    // la escala efectiva, para que el reparto no se desarme en pantallas chicas.
+    const baseBottom = def.scale < 0.30 ? 42
+                     : def.scale < 0.40 ? 32
+                     : def.scale < 0.55 ? 22
+                     : def.scale < 0.85 ? 11
+                     : def.scale < 1.20 ? 2
+                     : 0;
+
+    // Un empujoncito aleatorio rompe la fila: el campo no es una cuadrícula
+    const bottomOffset = def.center ? 0 : Math.max(0, baseBottom + rnd(-2.6, 2.6));
+    const leftOffset   = def.center ? def.left : def.left + rnd(-2.2, 2.2);
 
     wrap.style.cssText = [
-      `left:${def.left}%`,
-      `bottom:${bottomOffset}`,
+      `left:${leftOffset.toFixed(2)}%`,
+      `bottom:${bottomOffset.toFixed(2)}%`,
       `--sway-a:${def.sway}deg`,
       `--sway-dur:${def.dur}s`,
       `--sway-delay:${def.delay}s`,
@@ -182,11 +223,11 @@ function buildStars() {
   const sky = $('#stars');
   const VW = window.innerWidth;
   const VH = window.innerHeight;
-  const count = Math.min(180, Math.floor((VW * VH) / 5000));
+  const count = Math.min(110, Math.floor((VW * VH) / 8000));
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
-    el.className = 'star';
+    el.className = Math.random() < 0.16 ? 'star twinkle' : 'star';
     const size = rnd(1, 3.5);
     const top = rnd(0, 65); // stars only in sky portion
     const left = rnd(0, 100);
@@ -202,120 +243,265 @@ function buildStars() {
   }
 }
 
-/* ─── TSPARTICLES (petals in wind) ─── */
-async function initParticles() {
-  if (typeof tsParticles === 'undefined') return;
+/* ─── TREELINE ─── siluetas de pinos sobre la loma más cercana */
+function buildTreeline() {
+  const g = $('#treeline');
+  if (!g) return;
 
-  await tsParticles.load({
-    id: 'tsparticles',
-    options: {
-      fullScreen: false,
-      background: { color: { value: 'transparent' } },
-      fpsLimit: 60,
-      particles: {
-        number: { value: 0 },
-        color: { value: ['#ffd700', '#ffb300', '#fff176', '#ffcc02', '#ffe57a'] },
-        shape: {
-          type: 'char',
-          options: {
-            char: [
-              { value: '🌸', font: 'Verdana', style: '', weight: '400' },
-              { value: '✿', font: 'Verdana', style: '', weight: '400' },
-              { value: '❋', font: 'Verdana', style: '', weight: '400' },
-            ]
-          }
-        },
-        opacity: {
-          value: { min: 0.4, max: 0.9 },
-          animation: { enable: true, speed: 0.5, minimumValue: 0.1, sync: false }
-        },
-        size: {
-          value: { min: 8, max: 18 },
-          animation: { enable: true, speed: 2, minimumValue: 4, sync: false }
-        },
-        move: {
-          enable: true,
-          speed: { min: 1.5, max: 4 },
-          direction: 'right',
-          random: true,
-          straight: false,
-          outModes: { default: 'out', left: 'destroy', right: 'destroy', top: 'out', bottom: 'out' },
-          attract: { enable: false },
-          warp: false,
-          gravity: { enable: true, acceleration: 0.3 },
-          path: {
-            enable: true,
-            delay: { value: 0 },
-            options: { size: 12, draw: false, increment: 0.004 }
-          }
-        },
-        rotate: {
-          value: { min: 0, max: 360 },
-          animation: { enable: true, speed: { min: 5, max: 25 }, sync: false }
-        },
-        wobble: { enable: true, distance: 10, speed: { min: -5, max: 5 } },
-        life: {
-          duration: { sync: false, value: { min: 3, max: 8 } },
-          count: 1
-        }
-      },
-      emitters: {
-        direction: 'right',
-        rate: { delay: window.innerWidth < 768 ? 1.2 : 0.6, quantity: 1 },
-        position: { x: -5, y: { min: 20, max: 90 } },
-        size: { width: 0, height: 60 }
-      },
-      interactivity: { events: { resize: true } }
+  // La loma cercana va de y≈248 (bordes) a y≈272 (valles) en el viewBox 1440×300
+  const ridgeY = x => 258 - 12 * Math.cos((x / 1440) * Math.PI * 6);
+
+  let markup = '';
+  for (let x = -20; x < 1460; x += rnd(16, 46)) {
+    const base = ridgeY(x);
+    const h = rnd(14, 34);
+    const w = h * rnd(0.32, 0.46);
+    // pino: triángulo esbelto con un tronquito
+    markup +=
+      `<path class="tree" d="M${x.toFixed(1)},${(base + 2).toFixed(1)}
+        L${(x - w).toFixed(1)},${(base + 2).toFixed(1)}
+        L${(x - w * 0.45).toFixed(1)},${(base - h * 0.42).toFixed(1)}
+        L${(x - w * 0.72).toFixed(1)},${(base - h * 0.38).toFixed(1)}
+        L${x.toFixed(1)},${(base - h).toFixed(1)}
+        L${(x + w * 0.72).toFixed(1)},${(base - h * 0.38).toFixed(1)}
+        L${(x + w * 0.45).toFixed(1)},${(base - h * 0.42).toFixed(1)}
+        L${(x + w).toFixed(1)},${(base + 2).toFixed(1)} Z"/>`;
+  }
+
+  g.innerHTML = markup;
+}
+
+/* ─── CLOUDS ─── bandas de nube teñidas por el atardecer */
+function buildClouds() {
+  const box = $('#clouds');
+  if (!box) return;
+
+  const VW = window.innerWidth;
+  const count = VW < 768 ? 5 : 8;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'cloud';
+
+    const w = rnd(VW * 0.22, VW * 0.62);
+    const h = rnd(14, 46);
+    const top = rnd(8, 46);          // sólo en la mitad alta del cielo
+    const far = top < 24;            // las altas, más tenues y lentas
+
+    // Base oscura arriba, vientre encendido por el sol de abajo
+    el.style.cssText = [
+      `width:${w}px`,
+      `height:${h}px`,
+      `top:${top}%`,
+      `--blur:${rnd(10, 22).toFixed(0)}px`,
+      `--op:${(far ? rnd(0.18, 0.34) : rnd(0.3, 0.55)).toFixed(2)}`,
+      `background:linear-gradient(to bottom,` +
+        ` rgba(58,32,74,.85) 0%,` +
+        ` rgba(118,52,86,.7) 45%,` +
+        ` rgba(255,146,54,.65) 78%,` +
+        ` rgba(255,206,120,.55) 100%)`
+    ].join(';');
+
+    box.appendChild(el);
+
+    // Deriva lenta de izquierda a derecha, en bucle
+    const dur = rnd(far ? 150 : 95, far ? 260 : 170);
+    const startX = rnd(-w, VW);
+    gsap.set(el, { x: startX });
+    gsap.to(el, {
+      x: VW + w,
+      duration: dur * ((VW + w - startX) / (VW + w * 2)),
+      ease: 'none',
+      onComplete: function loop() {
+        gsap.set(el, { x: -w });
+        gsap.to(el, { x: VW + w, duration: dur, ease: 'none', onComplete: loop });
+      }
+    });
+  }
+}
+
+/* ─── BIRDS ─── bandada lejana cruzando el cielo */
+function buildBirds() {
+  const box = $('#birds');
+  if (!box) return;
+
+  const VW = window.innerWidth;
+  const count = VW < 768 ? 3 : 5;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'bird';
+
+    const s = rnd(0.5, 1.15);                 // tamaño = distancia
+    const top = rnd(11, 32);
+    const flap = rnd(0.34, 0.62);
+
+    el.style.cssText = [
+      `top:${top}%`,
+      `--flap:${flap.toFixed(2)}s`,
+      `--flap-delay:${rnd(0, 0.5).toFixed(2)}s`,
+      `opacity:${(0.3 + s * 0.45).toFixed(2)}`
+    ].join(';');
+
+    const w = Math.round(22 * s);
+    el.innerHTML =
+      `<svg width="${w}" height="${Math.round(w * 0.5)}" viewBox="0 0 22 11">
+         <path class="wing" d="M1,7 C4,1 8,1 11,6 C14,1 18,1 21,7"
+               fill="none" stroke="#1a1030" stroke-width="1.5"
+               stroke-linecap="round"/>
+       </svg>`;
+
+    box.appendChild(el);
+
+    // La ondulación vertical va en el SVG interior para no chocar con
+    // el desplazamiento horizontal que se aplica al contenedor
+    gsap.to(el.firstElementChild, {
+      y: rnd(-26, 26),
+      duration: rnd(3, 6),
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1
+    });
+
+    // Vuelo continuo de lado a lado
+    const fly = () => {
+      const dur = rnd(26, 52) / s;            // las lejanas cruzan más despacio
+      gsap.fromTo(el,
+        { x: -40 },
+        { x: VW + 40, duration: dur, ease: 'none', delay: rnd(0, 6), onComplete: fly }
+      );
+    };
+    fly();
+  }
+}
+
+/* ─── FIREFLIES ─── motas de luz cálida sobre el campo */
+function buildFireflies() {
+  const box = $('#fireflies');
+  if (!box) return;
+
+  const VW = window.innerWidth;
+  const count = VW < 768 ? 6 : 9;
+
+  for (let i = 0; i < count; i++) {
+    const el = document.createElement('div');
+    el.className = 'firefly';
+
+    el.style.cssText = [
+      `left:${rnd(-2, 102).toFixed(1)}%`,
+      `top:${rnd(38, 94).toFixed(1)}%`,
+      `--s:${rnd(2.5, 5.5).toFixed(1)}px`,
+      `--dx:${rnd(-90, 90).toFixed(0)}px`,
+      `--dy:${rnd(-110, -30).toFixed(0)}px`,
+      `--dur:${rnd(11, 26).toFixed(1)}s`,
+      `--blink:${rnd(2.2, 5.5).toFixed(1)}s`,
+      `--delay:-${rnd(0, 14).toFixed(1)}s`
+    ].join(';');
+
+    box.appendChild(el);
+  }
+}
+
+/* ─── FOREGROUND ─── hierba y flores fuera de foco (profundidad de campo) */
+function buildForeground() {
+  const grass = $('#fg-grass');
+  const fgBox = $('#fg-flowers');
+
+  // Briznas de hierba en silueta, recortadas por el borde inferior
+  if (grass) {
+    let blades = '';
+    for (let x = -30; x < 1470; x += rnd(8, 20)) {
+      const h = rnd(60, 200);
+      const lean = rnd(-34, 34);
+      const w = rnd(3, 8);
+      blades +=
+        `<path class="blade" d="M${x.toFixed(1)},220
+          C${(x + lean * 0.2).toFixed(1)},${(220 - h * 0.45).toFixed(1)}
+           ${(x + lean * 0.7).toFixed(1)},${(220 - h * 0.78).toFixed(1)}
+           ${(x + lean).toFixed(1)},${(220 - h).toFixed(1)}
+          C${(x + lean * 0.7 + w).toFixed(1)},${(220 - h * 0.76).toFixed(1)}
+           ${(x + lean * 0.2 + w).toFixed(1)},${(220 - h * 0.42).toFixed(1)}
+           ${(x + w).toFixed(1)},220 Z"/>`;
     }
-  });
+    grass.innerHTML = blades;
+  }
 
-  particlesLoaded = true;
+  // Flores gigantes fuera de foco asomando por las esquinas
+  if (fgBox) {
+    const vw = window.innerWidth;
+    const gScale = vw < 520 ? 1.5 : vw < 900 ? 2.1 : 2.8;
+    // En pantallas estrechas la flor es más chica: hay que subirla para que
+    // siga asomando por el borde inferior
+    const lift = vw < 520 ? 24 : vw < 900 ? 12 : 0;
+
+    const fg = [
+      { left: -6,  bottom: -34, scale: 1.00, dur: 7.0, delay: 0.0, sway: -2.2 },
+      { left: 16,  bottom: -46, scale: 0.86, dur: 8.2, delay: 1.4, sway: -1.8 },
+      { left: 58,  bottom: -50, scale: 0.78, dur: 6.4, delay: 0.7, sway: -2.6 },
+      { left: 83,  bottom: -38, scale: 0.95, dur: 7.6, delay: 2.0, sway: -2.0 },
+      { left: 97,  bottom: -44, scale: 0.88, dur: 6.9, delay: 1.1, sway: -2.4 }
+    ];
+
+    fg.forEach(f => {
+      const el = document.createElement('div');
+      el.className = 'fg-flower';
+      el.style.cssText = [
+        `left:${f.left}%`,
+        `bottom:${f.bottom + lift}%`,
+        `--sway-a:${f.sway}deg`,
+        `--sway-dur:${f.dur}s`,
+        `--sway-delay:${f.delay}s`
+      ].join(';');
+      el.innerHTML = createFlowerSVG(f.scale * gScale, false);
+      fgBox.appendChild(el);
+    });
+  }
 }
 
 /* ─── WIND ANIMATION ─── */
 function startWind() {
-  const flowers = $$('.flower-wrap');
-
-  windTimeline = gsap.timeline({ repeat: -1 });
-
-  flowers.forEach((f, i) => {
-    const swayA = parseFloat(f.style.getPropertyValue('--sway-a')) || rnd(-4, -2);
-    const dur = rnd(3.5, 6);
-    const delay = rnd(0, 3);
-
-    gsap.to(f, {
-      rotation: swayA * -1.2,
-      x: rnd(1, 3),
-      duration: dur,
-      ease: 'sine.inOut',
-      yoyo: true,
-      repeat: -1,
-      delay: delay
-    });
+  $$('.flower-wrap[data-wind="true"]').forEach(f => {
+    // La entrada dejó un transform en línea; hay que soltarlo para que la
+    // animación CSS del viento tome el control sin pelearse con él
+    gsap.set(f, { clearProps: 'transform' });
+    f.classList.add('windy');
   });
 }
 
 
 /* ─── PARALLAX ─── */
 function initParallax() {
-  const field = $('#field');
+  // Cada capa se mueve según su distancia: el fondo apenas, el frente mucho
+  const layers = [
+    { el: $('#hills'),      ax: -3,  ay: -1, dur: 2.0 },
+    { el: $('#mist'),       ax: -5,  ay: 0,  dur: 2.2 },
+    { el: $('#field'),      ax: -10, ay: 0,  dur: 1.2 },
+    { el: $('#fireflies'),  ax: 14,  ay: 4,  dur: 1.4 },
+    { el: $('#foreground'), ax: 30,  ay: 10, dur: 1.0 }
+  ].filter(l => l.el);
+
   const moon = $('#moon');
 
   const handleMove = (x, y) => {
     const cx = (x / window.innerWidth - 0.5) * 2;
     const cy = (y / window.innerHeight - 0.5) * 2;
 
-    gsap.to(field, {
-      x: cx * -10,
-      duration: 1.2,
-      ease: 'power1.out'
+    layers.forEach(l => {
+      gsap.to(l.el, {
+        x: cx * l.ax,
+        y: cy * l.ay,
+        duration: l.dur,
+        ease: 'power1.out',
+        overwrite: 'auto'
+      });
     });
 
     gsap.to(moon, {
       x: cx * 8,
       y: cy * 5,
       duration: 1.8,
-      ease: 'power1.out'
+      ease: 'power1.out',
+      overwrite: 'auto'
     });
   };
 
@@ -328,63 +514,13 @@ function initParallax() {
   }, { passive: true });
 }
 
-/* ─── CONFETTI BURST ─── */
-function burstConfetti() {
-  const canvas = $('#confetti');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-
-  const pieces = Array.from({ length: 80 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height - canvas.height,
-    size: rnd(6, 16),
-    speedY: rnd(2, 6),
-    speedX: rnd(-2, 2),
-    rot: rnd(0, 360),
-    rotSpeed: rnd(-5, 5),
-    color: pick(['#ffd700', '#ffb300', '#fff176', '#ff9800', '#ffe57a', '#ffffff'])
-  }));
-
-  let frame;
-  let alpha = 1;
-
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.globalAlpha = alpha;
-
-    pieces.forEach(p => {
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate((p.rot * Math.PI) / 180);
-      ctx.fillStyle = p.color;
-      ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2);
-      ctx.restore();
-
-      p.y += p.speedY;
-      p.x += p.speedX;
-      p.rot += p.rotSpeed;
-    });
-
-    if (pieces.some(p => p.y < canvas.height + 20)) {
-      // fade out after 2.5s
-      if (alpha > 0) alpha -= 0.003;
-      frame = requestAnimationFrame(draw);
-    } else {
-      cancelAnimationFrame(frame);
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  }
-
-  draw();
-
-  // reset pieces position after they fall
-  setTimeout(() => {
-    pieces.forEach(p => {
-      p.y = -20;
-      p.x = Math.random() * canvas.width;
-    });
-  }, 100);
+/* ─── Altura de reposo del sol: justo encima de la línea del horizonte ─── */
+function sunRestBottom() {
+  const ground = $('#ground');
+  if (!ground) return '56%';
+  // El borde visible del suelo está al ~80% de su altura (ver --horizon en CSS)
+  const horizon = (ground.offsetHeight * 0.80) / window.innerHeight;
+  return (horizon * 100 + 2).toFixed(1) + '%';
 }
 
 /* ─── MAIN SEQUENCE ─── */
@@ -393,7 +529,6 @@ async function runSequence() {
   const flowers = $$('.flower-wrap');
   const sky = $('#sky');
   const moon = $('#moon');
-  const btnWrap = $('#btn-wrap');
 
   // Sort by data-order attribute
   flowers.sort((a, b) =>
@@ -406,19 +541,29 @@ async function runSequence() {
   /* 1 ─ Stars already visible via CSS animation */
 
   /* 2 ─ Sol aparece */
-  tl.to(moon, { opacity: 1, duration: 2.5, ease: 'power1.inOut' }, 0.8);
+  tl.to(moon, { opacity: 1, duration: 1.1, ease: 'power1.inOut' }, 0.15);
+  tl.to('#sunglow', { opacity: 1, duration: 1.8, ease: 'power1.inOut' }, 0.25);
+
+  /* 2b ─ El horizonte se dibuja: montañas, nubes, niebla y rayos */
+  tl.to('#hills',  { opacity: 1, duration: 1.4, ease: 'power1.out' }, 0.35);
+  tl.to('#clouds', { opacity: 1, duration: 1.6, ease: 'power1.out' }, 0.6);
+  tl.to('#mist',   { opacity: 1, duration: 1.8, ease: 'power1.out' }, 0.8);
+  tl.to('#godrays',{ opacity: 1, duration: 2.2, ease: 'power1.out' }, 1.0);
 
   /* 3 ─ Sky shifts to dawn */
-  tl.add(() => sky.classList.add('dawn'), 2.5);
+  tl.add(() => sky.classList.add('dawn'), 0.9);
 
   /* 4a ─ Flores de fondo: fade-in rápido en grupo */
   tl.fromTo(simpleFlowers,
     { opacity: 0 },
-    { opacity: 1, duration: 1.8, stagger: 0.04, ease: 'power1.out' },
-    2.2
+    { opacity: 1, duration: 0.9, stagger: 0.012, ease: 'power1.out' },
+    0.7
   );
 
   /* 4b ─ Flores principales: brotan del suelo en cascada */
+  const STEP  = 0.055;  // separación entre brotes
+  const START = 0.9;    // cuándo brota la primera
+
   mainFlowers.forEach((flower, i) => {
     const h = parseFloat(flower.dataset.height || 120);
 
@@ -426,72 +571,98 @@ async function runSequence() {
       { opacity: 0, scaleY: 0, scaleX: 0.2, y: h * 0.3 },
       {
         opacity: 1, scaleY: 1, scaleX: 1, y: 0,
-        duration: 1.2, ease: 'back.out(1.4)',
+        duration: 0.85, ease: 'back.out(1.4)',
         transformOrigin: 'bottom center'
       },
-      3.5 + i * 0.28
+      START + i * STEP
     );
 
     const petals = $$('.petal', flower);
     tl.fromTo(petals,
       { scale: 0, opacity: 0, transformOrigin: 'center 80%' },
       {
-        scale: 1, opacity: 1, duration: 0.7,
-        stagger: 0.04, ease: 'back.out(2)',
+        scale: 1, opacity: 1, duration: 0.5,
+        stagger: 0.03, ease: 'back.out(2)',
         transformOrigin: 'center 80%'
       },
-      3.5 + i * 0.28 + 0.5
+      START + i * STEP + 0.35
     );
   });
 
-  /* 5 ─ Sol desciende al horizonte y se queda ahí */
-  gsap.to(moon, { bottom: '61%', duration: 14, ease: 'power2.out', delay: 2 });
+  /* 5 ─ Sol desciende hasta besar el horizonte y se queda ahí */
+  gsap.to(moon, { bottom: sunRestBottom(), duration: 8, ease: 'power2.out', delay: 0.6 });
 
-  /* ─ Start wind & particles after flowers are up */
-  const afterFlowers = 3.5 + mainFlowers.length * 0.28 + 1.2;
+  /* ─ El viento arranca cuando el campo ya está en pie */
+  const afterFlowers = START + mainFlowers.length * STEP + 0.85;
 
+  tl.add(startWind, afterFlowers);
+
+  /* 5b ─ Primer plano desenfocado, pájaros y luciérnagas */
+  tl.to('#foreground', { opacity: 1, duration: 1.4, ease: 'power1.out' }, afterFlowers - 1.1);
+  tl.to('#birds',      { opacity: 1, duration: 1.6, ease: 'power1.out' }, afterFlowers - 0.8);
+  tl.to('#fireflies',  { opacity: 1, duration: 2.0, ease: 'power1.out' }, afterFlowers - 0.3);
+
+  /* 6 ─ La escena queda limpia; solo asoma la pista de que hay más abajo */
   tl.add(() => {
-    startWind();
-    initParticles();
-  }, afterFlowers);
+    sceneReady = true;
+    const hint = $('#scroll-hint');
+    if (hint && window.scrollY < 10) hint.classList.add('on');
+  }, afterFlowers - 0.2);
+}
 
-  /* 6 ─ Frase aparece con delay tras las flores */
-  /* 6 ─ Frase aparece con delay tras las flores */
-  tl.add(() => {
-    const phrase = $('#phrase');
-    if (phrase) phrase.style.animationPlayState = 'running';
-  }, afterFlowers + 0.6);
+/* ─── SCROLL REVEAL ─── la frase se descubre al deslizar hacia abajo */
+function initScrollReveal() {
+  const phrase = $('#phrase');
+  const dim    = $('#dim');
+  const hint   = $('#scroll-hint');
+  if (!phrase || !dim) return;
 
-  /* 6 ─ Button appears */
-  tl.fromTo(btnWrap,
-    { opacity: 0, y: 15 },
-    {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      ease: 'back.out(1.6)',
-      onComplete: () => {
-        btnWrap.style.pointerEvents = 'all';
-        $('#btn-final').addEventListener('click', () => {
-          burstConfetti();
-          gsap.to('#btn-final', {
-            scale: 0.92,
-            duration: 0.1,
-            yoyo: true,
-            repeat: 1,
-            ease: 'power2.inOut'
-          });
-        });
-      }
-    },
-    afterFlowers + 1.0
-  );
+  let pending = false;
+
+  const apply = () => {
+    pending = false;
+    // El recorrido: media pantalla de deslizamiento la revela del todo
+    const travel = window.innerHeight * 0.5;
+    const p = Math.min(1, Math.max(0, window.scrollY / travel));
+    // Arranca más tarde de lo que sube el velo, así el texto nunca pelea
+    // con el paisaje a plena luz
+    const t = Math.min(1, Math.max(0, (p - 0.12) / 0.88));
+
+    phrase.style.opacity = t.toFixed(3);
+    phrase.style.transform =
+      `translateX(var(--tx)) translateY(${((1 - t) * 28).toFixed(1)}px)`;
+    dim.style.opacity = p.toFixed(3);
+
+    if (hint) hint.classList.toggle('on', sceneReady && window.scrollY < 10);
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!pending) { pending = true; requestAnimationFrame(apply); }
+  }, { passive: true });
+
+  window.addEventListener('resize', apply);
+  apply();
 }
 
 /* ─── BOOT ─── */
 document.addEventListener('DOMContentLoaded', () => {
+  // Al recargar, el navegador restaura el scroll y la frase aparecería de golpe
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
+  // Centrado de los elementos que GSAP va a transformar después
+  gsap.set('#moon', { xPercent: -50 });
+
+  // Paisaje, de atrás hacia delante
   buildStars();
+  buildClouds();
+  buildBirds();
+  buildTreeline();
   buildFlowers();
+  buildFireflies();
+  buildForeground();
+
   initParallax();
+  initScrollReveal();
   runSequence();
 });

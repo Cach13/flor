@@ -9,49 +9,142 @@
   <title>Para ti 🌻</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <!-- Las fuentes no bloquean el primer pintado, pero se piden ya con
+       prioridad alta: si llegasen tarde, el cambio de fuente repintaría la
+       frase y contaría como un LCP tardío -->
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+  </noscript>
 </head>
 <body>
 
   <div id="scene">
+    <!-- 1. Cielo -->
     <div id="sky"></div>
-    <div id="stars"></div>
-    <div id="moon"></div>
-    <div id="tsparticles"></div>
 
+    <!-- 2. Estrellas -->
+    <div id="stars"></div>
+
+    <!-- 3. Resplandor atmosférico del horizonte -->
+    <div id="sunglow"></div>
+
+    <!-- 4. Rayos de luz -->
+    <div id="godrays"></div>
+
+    <!-- 5. Sol -->
+    <div id="moon"></div>
+
+    <!-- 6. Nubes (generadas en buildClouds) -->
+    <div id="clouds"></div>
+
+    <!-- 7. Pájaros lejanos (generados en buildBirds) -->
+    <div id="birds"></div>
+
+    <!-- 8. Montañas lejanas con perspectiva atmosférica -->
+    <div id="hills">
+      <svg id="hills-svg" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 1440 300" preserveAspectRatio="none" aria-hidden="true">
+        <!-- cordillera lejana -->
+        <path class="ridge ridge-far"
+              d="M0,205 L120,150 L205,178 L300,112 L395,165 L470,132 L560,186 L660,148 L745,192 L840,140 L930,175 L1030,122 L1125,170 L1215,145 L1310,190 L1400,160 L1440,182 L1440,300 L0,300 Z"/>
+        <!-- cordillera media -->
+        <path class="ridge ridge-mid"
+              d="M0,238 L95,196 L180,226 L275,172 L360,214 L455,190 L545,232 L640,198 L730,236 L825,188 L915,224 L1010,180 L1100,222 L1195,196 L1290,234 L1380,204 L1440,224 L1440,300 L0,300 Z"/>
+        <!-- lomas cercanas, suaves -->
+        <path class="ridge ridge-near"
+              d="M0,268 C160,244 320,272 480,254 C640,236 800,270 960,252 C1120,234 1280,266 1440,248 L1440,300 L0,300 Z"/>
+        <!-- línea de árboles, generada en buildTreeline() -->
+        <g id="treeline"></g>
+      </svg>
+    </div>
+
+    <!-- 9. Niebla del horizonte -->
+    <div id="mist">
+      <span class="mist-band" style="--y:0%;   --dur:64s; --op:.30"></span>
+      <span class="mist-band" style="--y:34%;  --dur:88s; --op:.22"></span>
+      <span class="mist-band" style="--y:66%;  --dur:52s; --op:.16"></span>
+    </div>
+
+    <!-- 10. Suelo -->
     <div id="ground">
       <svg id="ground-svg" xmlns="http://www.w3.org/2000/svg"
            viewBox="0 0 1440 400" preserveAspectRatio="none" aria-hidden="true">
+        <!-- Cada loma lleva su propio degradado vertical: la cresta recibe la
+             luz del sol y el pie se apaga, así no quedan bandas planas -->
+        <defs>
+          <linearGradient id="g-ground-1" x1="0" y1="40" x2="0" y2="210" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#1b2e0c"/><stop offset="1" stop-color="#0b1605"/>
+          </linearGradient>
+          <linearGradient id="g-ground-2" x1="0" y1="90" x2="0" y2="250" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#23390f"/><stop offset="1" stop-color="#101f06"/>
+          </linearGradient>
+          <linearGradient id="g-ground-3" x1="0" y1="130" x2="0" y2="285" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#2f5112"/><stop offset="1" stop-color="#172c08"/>
+          </linearGradient>
+          <linearGradient id="g-ground-4" x1="0" y1="165" x2="0" y2="400" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="#3a6516"/><stop offset="0.45" stop-color="#22400d"/>
+            <stop offset="1" stop-color="#0e1d05"/>
+          </linearGradient>
+        </defs>
         <!-- capas de tierra con ondas naturales -->
         <path d="M0,75 C180,40 380,95 580,65 C780,35 980,85 1180,55 C1320,38 1400,65 1440,50 L1440,400 L0,400 Z"
-              fill="#0d1a06"/>
+              fill="url(#g-ground-1)"/>
         <path d="M0,125 C280,90 530,138 780,115 C990,96 1200,130 1440,105 L1440,400 L0,400 Z"
-              fill="#152508"/>
+              fill="url(#g-ground-2)"/>
         <path d="M0,158 C340,132 690,165 1040,145 C1240,133 1370,152 1440,140 L1440,400 L0,400 Z"
-              fill="#1e390b"/>
+              fill="url(#g-ground-3)"/>
         <path d="M0,180 C380,162 780,184 1160,168 L1440,172 L1440,400 L0,400 Z"
-              fill="#2a4a10"/>
+              fill="url(#g-ground-4)"/>
         <!-- franja de hierba superior -->
         <path d="M0,188 C200,178 450,192 700,183 C950,174 1200,188 1440,179 L1440,198 L0,198 Z"
               fill="#356114" opacity="0.6"/>
       </svg>
+      <!-- luz cálida del atardecer lamiendo el campo -->
+      <div id="ground-light"></div>
     </div>
 
+    <!-- 11. Campo de flores -->
     <div id="field">
       <!-- Las flores se generan con JS en buildFlowers() -->
     </div>
+
+    <!-- 12. Luciérnagas (generadas en buildFireflies) -->
+    <div id="fireflies"></div>
+
+    <!-- 13. Primer plano desenfocado: hierba y flores fuera de foco -->
+    <div id="foreground">
+      <div id="fg-flowers"></div>
+      <svg id="fg-grass" xmlns="http://www.w3.org/2000/svg"
+           viewBox="0 0 1440 220" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </div>
+
+    <!-- 14. Viñeta y grano de película -->
+    <div id="vignette"></div>
+    <div id="grain"></div>
   </div>
 
-  <!-- Frase coqueta -->
+  <!-- Velo que se funde al deslizar, para que la frase respire -->
+  <div id="dim" aria-hidden="true"></div>
 
+  <!-- Frase coqueta: no sale sola, se revela al deslizar hacia abajo -->
+  <div id="phrase">
+    <span>Para ti, preciosa: no te pude entregar flores...</span>
+    <span>así que las programé 🌻</span>
+  </div>
 
-  <!-- Frase coqueta -->
-  <div id="phrase">No te pude entregar flores... así que las programé 🌻</div>
+  <!-- Pista de que hay algo más abajo -->
+  <div id="scroll-hint">Desliza hacia abajo</div>
 
-  <!-- CDN Libraries -->
+  <!-- Altura extra: es lo único que hace scrollable la página -->
+  <div id="scroll-space" aria-hidden="true"></div>
+
+  <!-- GSAP (única librería externa) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tsparticles@2.11.1/tsparticles.bundle.min.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
