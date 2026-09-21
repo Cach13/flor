@@ -613,7 +613,36 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; display:
   :root    { --ground-h: 54%; }
   #field   { height: 82%; }
   #hills   { height: 21%; }
-  #grain   { opacity: .035; }
+
+  /* En móvil estas capas eran enormes: medidas con DPR 3 daban 46 MB
+     (#godrays, ademas girando y con mascara), 26 MB (#sunglow) y 15 MB
+     (#grain). Animadas, el GPU del telefono se queda sin memoria de
+     texturas, las descarta y las repinta: de ahi el parpadeo y los
+     flashes de color. Quietas no necesitan capa propia, y ademas van
+     en vmin, que en vertical es el lado corto. */
+  #sunglow {
+    width: 120vmin;
+    height: 120vmin;
+    animation: none;
+  }
+
+  #godrays {
+    width: 140vmin;
+    height: 140vmin;
+    animation: none;
+  }
+
+  #grain {
+    inset: 0;
+    opacity: .03;
+    animation: none;
+  }
+
+  /* El desenfoque también cuesta el doble con DPR 3 */
+  .mist-band { filter: blur(11px); }
+  .fg-flower { filter: blur(5px) brightness(.62) saturate(.85); }
+  #fg-grass  { filter: blur(3px); }
+  .cloud     { filter: blur(calc(var(--blur, 14px) * .7)); }
 
   #moon {
     width: 60px;

@@ -176,15 +176,20 @@ function buildFlowers() {
   // Escala global según ancho de pantalla
   const vw = window.innerWidth;
   const gScale = vw < 380 ? 0.50 : vw < 520 ? 0.62 : vw < 768 ? 0.75 : vw < 1024 ? 0.88 : 1.0;
+  const windMin = vw < 768 ? 0.68 : 0.42;
+  // En móvil la fila del horizonte mide 15-18 px: no aporta y son 16 SVG
+  // más que rasterizar a DPR 3 cada vez que algo les pasa por encima
+  const minScale = vw < 768 ? 0.30 : 0;
 
-  defs.forEach(def => {
+  defs.filter(def => def.scale >= minScale).forEach(def => {
     const wrap = document.createElement('div');
     wrap.className = 'flower-wrap';
     wrap.dataset.order = def.order;
     wrap.dataset.simple = def.simple ? 'true' : '';
     // Las del fondo miden unos pocos píxeles: mecerlas no se aprecia
-    // y son casi la mitad de las animaciones de la escena
-    wrap.dataset.wind = def.scale >= 0.42 ? 'true' : '';
+    // y son casi la mitad de las animaciones de la escena. En móvil el
+    // listón sube: cada flor que se mece es una capa más para el GPU.
+    wrap.dataset.wind = def.scale >= windMin ? 'true' : '';
 
     const es = def.scale * gScale;          // escala efectiva
     const h = Math.round(185 * es);
@@ -227,7 +232,7 @@ function buildStars() {
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
-    el.className = Math.random() < 0.16 ? 'star twinkle' : 'star';
+    el.className = Math.random() < (VW < 768 ? 0.09 : 0.16) ? 'star twinkle' : 'star';
     const size = rnd(1, 3.5);
     const top = rnd(0, 65); // stars only in sky portion
     const left = rnd(0, 100);
@@ -277,7 +282,7 @@ function buildClouds() {
   if (!box) return;
 
   const VW = window.innerWidth;
-  const count = VW < 768 ? 5 : 8;
+  const count = VW < 768 ? 3 : 8;
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
@@ -326,7 +331,7 @@ function buildBirds() {
   if (!box) return;
 
   const VW = window.innerWidth;
-  const count = VW < 768 ? 3 : 5;
+  const count = VW < 768 ? 2 : 5;
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
@@ -381,7 +386,7 @@ function buildFireflies() {
   if (!box) return;
 
   const VW = window.innerWidth;
-  const count = VW < 768 ? 6 : 9;
+  const count = VW < 768 ? 4 : 9;
 
   for (let i = 0; i < count; i++) {
     const el = document.createElement('div');
